@@ -14,6 +14,8 @@ app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(compression());
 app.use(session({
+  //HttpOnly:true //can't use session with js
+  secure: true,
   secret: 'asadlfkj!@#!@#dfgasdg',
   resave: false,
   saveUninitialized: true,
