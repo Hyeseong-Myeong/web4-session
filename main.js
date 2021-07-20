@@ -2,15 +2,24 @@ const express = require('express')
 const app = express()
 var fs = require('fs');
 var qs = require('querystring');
-
 var bodyParser = require('body-parser');//built in body-parser since express v4.16
 var compression = require('compression');
-var topicRouter = require('./routes/topic.js');
-var indexRouter = require('./routes/index.js');
+
+var helmet = require('helmet');
+var session = require('express-session');
+var FileStore = require('session-file-store')(session)
+app.use(helmet());
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(compression());
+app.use(session({
+  secret: 'asadlfkj!@#!@#dfgasdg',
+  resave: false,
+  saveUninitialized: true,
+  store: new FileStore()
+}))
+
 app.get('*', function(request, response, next){
   fs.readdir(`./data`, function(error, filelist){
     request.list = filelist;
@@ -18,10 +27,15 @@ app.get('*', function(request, response, next){
   });
 });
 
+var topicRouter = require('./routes/topic.js');
+var indexRouter = require('./routes/index.js');
+var authRouter = require('./routes/auth');
+
 //route, routing
 // app.get('/', (req, response) => response.send('Hello World!')) 
 app.use('/', indexRouter);
 app.use('/topic', topicRouter);
+app.use('/auth', authRouter);
 
 app.use(function(req, res, next){
   res.status(404).send('Sorry cant find that!')
